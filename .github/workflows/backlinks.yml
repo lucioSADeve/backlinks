@@ -52,6 +52,8 @@ jobs:
     - name: Run backlinks checker
       env:
         DISPLAY: :99  # Configura um display virtual
+        PLAYWRIGHT_BROWSERS_PATH: 0  # Força o download dos navegadores
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0  # Garante que os navegadores sejam baixados
       run: |
         xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" python domain_checker.py || {
           echo "Script failed with exit code $?"
