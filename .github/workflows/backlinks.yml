@@ -50,8 +50,10 @@ jobs:
         EOL
     
     - name: Run backlinks checker
+      env:
+        DISPLAY: :99  # Configura um display virtual
       run: |
-        python domain_checker.py || {
+        xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" python domain_checker.py || {
           echo "Script failed with exit code $?"
           exit 1
         }

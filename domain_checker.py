@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # Configurações
-HEADLESS = False
+HEADLESS = True  # Alterado para True para rodar sem interface gráfica
 DELAY_BETWEEN_REQUESTS = 5  # segundos
 MAX_RETRIES = 3
 TIMEOUT = 60000  # 60 segundos
