@@ -37,10 +37,19 @@ jobs:
     - name: Create Google Drive directory
       run: mkdir -p "Google Drive"
     
+    - name: Create config.py
+      run: |
+        cat > config.py << EOL
+        # Credenciais do SEOPack
+        SEOPACK_LOGIN = "${{ secrets.SEOPACK_LOGIN }}"
+        SEOPACK_PASSWORD = "${{ secrets.SEOPACK_PASSWORD }}"
+        
+        # URLs
+        SEOPACK_LOGIN_URL = "https://seopacktools.com/login"
+        SEOPACK_DASHBOARD_URL = "https://smr.seopacktools.com/dashboard"
+        EOL
+    
     - name: Run backlinks checker
-      env:
-        SEOPACK_LOGIN: ${{ secrets.SEOPACK_LOGIN }}
-        SEOPACK_PASSWORD: ${{ secrets.SEOPACK_PASSWORD }}
       run: |
         python domain_checker.py || {
           echo "Script failed with exit code $?"
