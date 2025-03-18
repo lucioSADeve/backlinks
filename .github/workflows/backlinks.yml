@@ -7,7 +7,8 @@ on:
 
 jobs:
   check-backlinks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30  # Define um timeout de 30 minutos
     
     steps:
     - uses: actions/checkout@v4
