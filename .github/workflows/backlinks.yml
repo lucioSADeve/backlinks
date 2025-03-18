@@ -35,10 +35,8 @@ jobs:
         pip install google-auth-oauthlib
         pip install google-auth-httplib2
         pip install google-api-python-client
-        if [ ! -d ~/.cache/ms-playwright ]; then
-          playwright install chromium
-          playwright install-deps
-        fi
+        playwright install chromium
+        playwright install-deps
     
     - name: Create domains.txt if not exists
       run: |
