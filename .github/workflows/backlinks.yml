@@ -18,16 +18,12 @@ jobs:
         python-version: '3.10'
         cache: 'pip'  # Habilita cache do pip
     
-    - name: Cache Playwright browsers
-      uses: actions/cache@v4
-      id: playwright-cache
-      with:
-        path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
-        restore-keys: |
-          playwright-${{ runner.os }}-
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb libgbm1
     
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install playwright
@@ -35,8 +31,11 @@ jobs:
         pip install google-auth-oauthlib
         pip install google-auth-httplib2
         pip install google-api-python-client
-        playwright install chromium
-        playwright install-deps
+    
+    - name: Install Playwright browsers
+      run: |
+        python -m playwright install chromium
+        python -m playwright install-deps
     
     - name: Create domains.txt if not exists
       run: |
@@ -61,9 +60,9 @@ jobs:
     
     - name: Run backlinks checker
       env:
-        DISPLAY: :99  # Configura um display virtual
-        PLAYWRIGHT_BROWSERS_PATH: 0  # Força o download dos navegadores
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0  # Garante que os navegadores sejam baixados
+        DISPLAY: :99
+        PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
       run: |
         xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" python domain_checker.py || {
           echo "Script failed with exit code $?"
