@@ -1,0 +1,2 @@
+# Lista de domínios para verificar (um por linha)
+netmastertvonline.com

@@ -1,0 +1,23 @@
+# Arquivos de configuração
+config.py
+credentials.json
+token.json
+auth.json
+
+# Arquivos de debug
+debug/
+*.png
+
+# Arquivos de resultados
+Google Drive/
+*.xlsx
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+venv/
+env/
+.env/ 
