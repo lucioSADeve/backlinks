@@ -64,131 +64,144 @@ async def check_login_status(page):
         return False
 
 async def login_seopack(page):
-    """Faz login no SEOPack"""
+    """Realiza login no SEOPack"""
     try:
-        print("\n=== Iniciando processo de login ===")
+        print("=== Iniciando processo de login ===")
+        
+        # Acessa a página de login
         print("Acessando página de login...")
-        await page.goto(SEOPACK_LOGIN_URL, timeout=60000)
-        print("Página carregada, aguardando elementos...")
+        await page.goto(SEOPACK_LOGIN_URL)
         
         # Aguarda a página carregar completamente
-        await page.wait_for_load_state('networkidle', timeout=60000)
-        await page.wait_for_timeout(5000)  # Aumentado para 5 segundos
+        print("Aguardando página carregar...")
+        await page.wait_for_load_state("networkidle", timeout=60000)  # 60 segundos
+        await page.wait_for_load_state("domcontentloaded", timeout=60000)
         
-        # Tenta diferentes seletores para o campo de usuário
-        print("Procurando campo de usuário...")
-        selectors = [
+        # Aguarda um pouco para garantir que a página está totalmente carregada
+        await asyncio.sleep(5)
+        
+        print("Página carregada, aguardando elementos...")
+        
+        # Lista de seletores para tentar encontrar o campo de usuário
+        usuario_selectors = [
+            'input[type="text"][name="usuario"][placeholder="Seu usuario"]',
             'input[name="usuario"]',
             'input[type="text"]',
             'input[placeholder*="usuário" i]',
-            'input[placeholder*="login" i]'
+            'input[placeholder*="login" i]',
+            'input[type="email"]',
+            '#usuario',
+            '#email',
+            '.form-control',
+            'input.form-control'
         ]
         
+        # Lista de seletores para tentar encontrar o campo de senha
+        senha_selectors = [
+            'input[name="senha"]',
+            'input[type="password"]',
+            'input[placeholder*="senha" i]',
+            '#senha',
+            '#password'
+        ]
+        
+        # Lista de seletores para tentar encontrar o botão de login
+        login_button_selectors = [
+            'button[type="submit"]',
+            'input[type="submit"]',
+            'button:has-text("Entrar")',
+            'button:has-text("Login")',
+            '.btn-primary',
+            '.btn-login'
+        ]
+        
+        # Tenta encontrar o campo de usuário
+        print("Procurando campo de usuário...")
         usuario_input = None
-        for selector in selectors:
+        for selector in usuario_selectors:
+            print(f"Tentando seletor: {selector}")
             try:
-                print(f"Tentando seletor: {selector}")
                 usuario_input = await page.wait_for_selector(selector, timeout=10000)
                 if usuario_input:
                     print(f"Campo de usuário encontrado com seletor: {selector}")
                     break
-            except:
+            except Exception as e:
+                print(f"Seletor {selector} não encontrado: {str(e)}")
                 continue
         
         if not usuario_input:
+            # Se não encontrou o campo, salva informações para debug
+            print("Campo de usuário não encontrado, salvando informações para debug...")
+            print(f"URL atual: {page.url}")
+            await page.screenshot(path="debug/login_error.png")
+            with open("debug/login_page.html", "w", encoding="utf-8") as f:
+                f.write(await page.content())
             raise Exception("Campo de usuário não encontrado")
         
-        # Preenche usuário
-        print("Preenchendo usuário...")
-        await usuario_input.fill(SEOPACK_LOGIN)
-        await page.wait_for_timeout(2000)  # Espera 2 segundos
-        
-        # Tenta diferentes seletores para o campo de senha
+        # Tenta encontrar o campo de senha
         print("Procurando campo de senha...")
-        selectors = [
-            'input[type="password"]',
-            'input[name="senha"]',
-            'input[name="password"]'
-        ]
-        
         senha_input = None
-        for selector in selectors:
+        for selector in senha_selectors:
+            print(f"Tentando seletor: {selector}")
             try:
-                print(f"Tentando seletor: {selector}")
                 senha_input = await page.wait_for_selector(selector, timeout=10000)
                 if senha_input:
                     print(f"Campo de senha encontrado com seletor: {selector}")
                     break
-            except:
+            except Exception as e:
+                print(f"Seletor {selector} não encontrado: {str(e)}")
                 continue
         
         if not senha_input:
             raise Exception("Campo de senha não encontrado")
         
-        # Preenche senha
-        print("Preenchendo senha...")
-        await senha_input.fill(SEOPACK_PASSWORD)
-        await page.wait_for_timeout(2000)  # Espera 2 segundos
-        
-        # Tenta diferentes seletores para o botão de login
+        # Tenta encontrar o botão de login
         print("Procurando botão de login...")
-        selectors = [
-            'button.btn.btn-block.btn-primary.mb-4.rounded',
-            'button[type="submit"]',
-            'button:has-text("Login")',
-            'button:has-text("Entrar")'
-        ]
-        
         login_button = None
-        for selector in selectors:
+        for selector in login_button_selectors:
+            print(f"Tentando seletor: {selector}")
             try:
-                print(f"Tentando seletor: {selector}")
                 login_button = await page.wait_for_selector(selector, timeout=10000)
                 if login_button:
                     print(f"Botão de login encontrado com seletor: {selector}")
                     break
-            except:
+            except Exception as e:
+                print(f"Seletor {selector} não encontrado: {str(e)}")
                 continue
         
         if not login_button:
             raise Exception("Botão de login não encontrado")
         
+        # Preenche as credenciais
+        print("Preenchendo credenciais...")
+        await usuario_input.fill(SEOPACK_LOGIN)
+        await senha_input.fill(SEOPACK_PASSWORD)
+        
         # Clica no botão de login
         print("Clicando no botão de login...")
         await login_button.click()
         
-        # Aguarda o login completar
-        print("Aguardando login completar...")
-        await page.wait_for_load_state('networkidle', timeout=60000)
-        await page.wait_for_timeout(5000)  # Espera 5 segundos
-        
-        # Verifica se o login foi bem sucedido
-        current_url = page.url
-        print(f"URL atual após login: {current_url}")
-        
-        if "login" in current_url.lower():
-            print("ERRO: Login falhou - ainda na página de login")
-            raise Exception("Falha no login - redirecionamento incorreto")
-            
-        print("Login realizado com sucesso!")
+        # Aguarda a navegação para o dashboard
+        print("Aguardando redirecionamento para o dashboard...")
+        try:
+            await page.wait_for_url(SEOPACK_DASHBOARD_URL, timeout=30000)
+            print("Login realizado com sucesso!")
+        except Exception as e:
+            print(f"Erro ao aguardar redirecionamento: {str(e)}")
+            # Salva informações para debug
+            print(f"URL atual: {page.url}")
+            await page.screenshot(path="debug/login_error.png")
+            with open("debug/login_page.html", "w", encoding="utf-8") as f:
+                f.write(await page.content())
+            raise Exception("Falha no redirecionamento após login")
         
     except Exception as e:
-        print(f"\nERRO no login: {str(e)}")
-        try:
-            current_url = page.url
-            print("URL atual:", current_url)
-            
-            # Tenta capturar screenshot do erro
-            await page.screenshot(path="debug/login_error.png")
-            print("Screenshot do erro salvo em debug/login_error.png")
-            
-            # Salva o HTML da página para debug
-            html_content = await page.content()
-            with open("debug/login_page.html", "w", encoding="utf-8") as f:
-                f.write(html_content)
-            print("HTML da página salvo em debug/login_page.html")
-        except:
-            print("Não foi possível obter informações adicionais do erro")
+        print(f"ERRO no login: {str(e)}")
+        # Salva informações para debug
+        print(f"URL atual: {page.url}")
+        await page.screenshot(path="debug/login_error.png")
+        with open("debug/login_page.html", "w", encoding="utf-8") as f:
+            f.write(await page.content())
         raise
 
 async def access_semrush(page):
