@@ -64,6 +64,7 @@ jobs:
         DISPLAY: :99
         PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+        PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /home/runner/.cache/ms-playwright/chromium-1161/chrome-linux/chrome
       run: |
         xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" python domain_checker.py || {
           echo "Script failed with exit code $?"
